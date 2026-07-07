@@ -3,13 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>我的第一頁</title>
+  <title>1-7-3 · 詳解</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2em; }
+    .coins { display: flex; gap: 16px; margin-bottom: 1em; }
+    .coin {
+      width: 100px; height: 100px;
+      display: grid; place-items: center;
+      border: 2px solid #d1d5db; border-radius: 50%;
+      font-size: 1.2rem;
+      /* 1. transition: 顏色與位移的變化都變滑順 */
+      transition: background .3s ease, transform .3s ease;
+    }
+    .coin.active {
+      background: gold; font-weight: bold;
+      /* 3. 中選的那顆抖一下 */
+      animation: shake .4s ease;
+    }
+
+    /* 2. keyframes: 用 rotate 做左右抖動 */
+    @keyframes shake {
+      from { transform: rotate(0deg); }
+      25%  { transform: rotate(-8deg); }
+      75%  { transform: rotate(8deg); }
+      to   { transform: rotate(0deg); }
+    }
+
+    /* 「點擊後短暫洗牌再定住」需要 setTimeout（Day 2 才教）, 留給行有餘力的人自由發揮 */
+  </style>
 </head>
 <body>
-  <h1>Hello, Web!</h1>
-  <p>這一頁真的在網路上</p>
-  <p>這一頁真的在網路上</p>
-  <p>這一頁真的在網路上</p>
-  <p>這一頁真的在網路上</p>
+  <div class="coins">
+    <div class="coin" id="head">正面</div>
+    <div class="coin" id="tail">反面</div>
+  </div>
+  <button id="flip">隨機</button>
+
+  <script>
+    const head = document.querySelector("#head");
+    const tail = document.querySelector("#tail");
+    const flip = document.querySelector("#flip");
+
+    flip.addEventListener("click", function () {
+      head.classList.remove("active");
+      tail.classList.remove("active");
+      if (Math.random() < 0.5) {
+        head.classList.add("active");
+      } else {
+        tail.classList.add("active");
+      }
+    });
+  </script>
 </body>
 </html>
