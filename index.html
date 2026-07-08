@@ -6,8 +6,8 @@
   <title>1-7-3 · 詳解</title>
   <style>
     body { font-family: system-ui, sans-serif; margin: 2em; }
-    .coins { display: flex; gap: 16px; margin-bottom: 1em; }
-    .coin {
+    .items { display: flex; gap: 16px; margin-bottom: 1em; }
+    .item {
       width: 100px; height: 100px;
       display: grid; place-items: center;
       border: 2px solid #d1d5db; border-radius: 50%;
@@ -15,7 +15,7 @@
       /* 1. transition: 顏色與位移的變化都變滑順 */
       transition: background .3s ease, transform .3s ease;
     }
-    .coin.active {
+    .item.active {
       background: gold; font-weight: bold;
       /* 3. 中選的那顆抖一下 */
       animation: shake .4s ease;
@@ -33,26 +33,49 @@
   </style>
 </head>
 <body>
-  <div class="coins">
-    <div class="coin" id="head">正面</div>
-    <div class="coin" id="tail">反面</div>
+  <div class="items">
+    <div class="items"></div>
   </div>
-  <button id="flip">隨機</button>
+  <button id="pick">吃什麼？</button>
 
   <script>
-    const head = document.querySelector("#head");
-    const tail = document.querySelector("#tail");
-    const flip = document.querySelector("#flip");
+    const foods = ["便當","漢堡","三明治","牛肉麵","拉麵"];
+    const container = document.querySelector(".items");
 
-    flip.addEventListener("click", function () {
-      head.classList.remove("active");
-      tail.classList.remove("active");
-      if (Math.random() < 0.5) {
-        head.classList.add("active");
-      } else {
-        tail.classList.add("active");
-      }
-    });
+    for (const food of foods) {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.textContent = food;
+      container.appendChild(div);
+    }
+
+    const button = document.querySelector("#pick");
+
+    button.addEventListener("click", function () {
+
+      // 清掉全部高亮
+      const items = document.querySelectorAll(".item");
+      items.forEach(function(item){
+          item.classList.remove("active");
+      });
+      const timer = setInterval(function (){
+        // 隨機挑一個
+        const index = Math.floor(Math.random() * foods.length);
+        // 點亮中選項目
+        items[index].classList.add("active");
+      },100)
+
+      setTimeout(function () {
+        clearInterval(timer);
+        items.forEach(function(item){
+          item.classList.remove("active");
+        });
+
+        const index = Math.floor(Math.random() * items.length);
+        items[index].classList.add("active");
+
+      }, 1000);
+  });
   </script>
 </body>
 </html>
