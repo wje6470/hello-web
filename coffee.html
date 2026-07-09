@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>總組裝 · 詳解</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <header><h1>好豆咖啡 · 營運儀表板</h1></header>
+  <main>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="搜尋品項…" />
+      <button id="hotBtn">只看熱飲</button>
+      <label>最低數量 <input id="minQty" type="number" value="0" min="0" /></label>
+      <button id="resetBtn">重設</button>
+    </div>
+    <p class="count"></p>
+    <section class="kpis"></section>
+    <section class="orders">
+      <table>
+        <thead>
+          <tr>
+            <th>品項</th>
+            <th data-key="price" data-label="單價">單價</th>
+            <th data-key="qty" data-label="數量">數量</th>
+            <th>小計</th>
+            <th>冷熱</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const orders = [
+      { item: "拿鐵", price: 120, qty: 8,  hot: true },
+      { item: "美式", price: 100, qty: 12, hot: false },
+      { item: "卡布", price: 130, qty: 5,  hot: true },
+      { item: "摩卡", price: 140, qty: 3,  hot: true },
+    ];
+
+    const nt = (n) => `$${n.toLocaleString()}`;
+
+    // 六題的條件全部收進同一份 state（P3 + P4 + P5）
+    const state = {
+      keyword: "",       // P3
+      onlyHot: false,    // P3: 只看冰飲 → 只看熱飲
+      sortKey: "qty",    // P4
+      sortDir: "desc",   // P4
+      minQty: 0,         // P5: 價格上限 ≤ → 最低數量 ≥
+    };
+
+    // P1: KPI 卡片——只留兩張, 收筆從 view 算, 隨篩選重算
+    function renderKpis(view) {
+      const revenue = view.reduce((s, o) => s + o.price * o.qty, 0);
+      const cups    = view.reduce((s, o) => s + o.qty, 0);
+      const kpis = [
+        { label: "總營收", value: nt(revenue) },
+        { label: "總杯數", value: cups },
+      ];
+      document.querySelector(".kpis").innerHTML = kpis
+        .map((k) => `<div class="card"><p class="label">${k.label}</p><p class="num">${k.value}</p></div>`)
+        .join("");
+    }
+
+    // P2: 表格 + 小計——iced ? 冰 : 熱 反轉成 hot ? 熱 : 冰
+    function renderTable(view) {
+      const rows = view.map((o) => `
+        <tr>
+          <td>${o.item}</td>
+          <td>${nt(o.price)}</td>
+          <td>${o.qty}</td>
+          <td>${nt(o.price * o.qty)}</td>
+          <td>${o.hot ? "熱" : "冰"}</td>
+        </tr>`).join("");
+      document.querySelector(".orders tbody").innerHTML = rows;
+    }
+
+    // P4: 表頭 ↓↑ 指示——先恢復 data-label 原字, 再標記啟用中那欄
+    function renderSortHint() {
+      document.querySelectorAll("th[data-key]").forEach((th) => {
+        th.textContent = th.dataset.label;
+        if (th.dataset.key === state.sortKey) {
+          th.textContent += state.sortDir === "desc" ? " ↓" : " ↑";
+        }
+      });
+    }
+
+    function render() {
+      let view = orders;
+      // P3 + P5: 每個條件各是一條 filter, 三條件自然同時生效
+      if (state.onlyHot) view = view.filter((o) => o.hot);
+      if (state.keyword) view = view.filter((o) => o.item.includes(state.keyword));
+      view = view.filter((o) => o.qty >= state.minQty);
+      // P4: 排序含方向
+      view = [...view].sort((a, b) => {
+        const diff = b[state.sortKey] - a[state.sortKey];
+        return state.sortDir === "asc" ? -diff : diff;
+      });
+      // P5: 筆數從 view 衍生
+      document.querySelector(".count").textContent = `目前符合 ${view.length} 筆訂單`;
+      renderKpis(view);
+      renderTable(view);
+      renderSortHint();
+      // P6: render 末尾順手保存——state 每次改變都自動存一份
+      localStorage.setItem("dashboard-state", JSON.stringify(state));
+    }
+
+    document.querySelector("#search").addEventListener("input", (e) => {
+      state.keyword = e.target.value;
+      render();
+    });
+
+    document.querySelector("#hotBtn").addEventListener("click", () => {
+      state.onlyHot = !state.onlyHot;
+      render();
+    });
+
+    document.querySelector("#minQty").addEventListener("input", (e) => {
+      state.minQty = Number(e.target.value);   // P5: 字串轉數字
+      render();
+    });
+
+    document.querySelectorAll("th[data-key]").forEach((th) => {
+      th.addEventListener("click", () => {
+        if (state.sortKey === th.dataset.key) {
+          state.sortDir = state.sortDir === "desc" ? "asc" : "desc";
+        } else {
+          state.sortKey = th.dataset.key;
+          state.sortDir = "desc";
+        }
+        render();
+      });
+    });
+
+    // P6: 重設——刪掉保存的 state 再重新載入
+    document.querySelector("#resetBtn").addEventListener("click", () => {
+      localStorage.removeItem("dashboard-state");
+      location.reload();
+    });
+
+    // P6: 還原——第一次 render 之前; Object.assign 合併進預設值,
+    //     舊資料缺的欄位（將來新增的）仍有預設值可用
+    const saved = localStorage.getItem("dashboard-state");
+    if (saved) Object.assign(state, JSON.parse(saved));
+    // P6: 控制項跟上還原後的 state, 畫面才不會跟資料對不上
+    document.querySelector("#search").value = state.keyword;
+    document.querySelector("#minQty").value = state.minQty;
+
+    render();
+  </script>
+</body>
+</html>

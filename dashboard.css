@@ -1,0 +1,27 @@
+/* Progressive Dashboard 共用樣式: 各題以 <link> 引入, 全程不用寫 CSS */
+body { font-family: system-ui, sans-serif; margin: 0; }
+header, main { padding: 0 1.5em; }
+:root { --brand: #b45309; --line: #e5e7eb; }
+
+.toolbar { display: flex; gap: .8em; align-items: center; margin: 0 0 1.2em; flex-wrap: wrap; }
+.toolbar input { border: 1px solid var(--line); border-radius: 8px; padding: .5em .8em; }
+.toolbar input[type="number"] { width: 5em; }
+.toolbar button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: .5em 1em; cursor: pointer; }
+.toolbar button:hover { background: #f6f8fa; }
+
+.count { color: #6b7280; margin: 0 0 .8em; }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 1.5em; }
+.card { border: 1px solid var(--line); border-radius: 12px; padding: 1em 1.2em; box-shadow: 0 2px 8px rgb(0 0 0 / .05); }
+.card .num { font-size: 2rem; font-weight: 700; color: var(--brand); margin: 0; }
+.card .label { margin: 0 0 .3em; color: #6b7280; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: .6em .8em; text-align: left; border-bottom: 1px solid var(--line); }
+th[data-key] { cursor: pointer; user-select: none; }
+th[data-key]:hover { color: var(--brand); }
+tbody tr:nth-child(even) { background: #f6f8fa; }
+tbody tr:hover { background: #eff6ff; }
+
+/* nav.js 在題目模板右下角放的進度提示 */
+.nav-hint { position: fixed; right: 14px; bottom: 12px; font-size: .8rem; color: #6b7280; background: #fff; padding: .1em .6em; border: 1px solid var(--line); border-radius: 999px; }

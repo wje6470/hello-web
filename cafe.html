@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2-3-2 · 渲染咖啡菜單卡片清單</title>
+  <style>
+    /* CSS 已就緒, 這題專注在 JS 渲染邏輯 */
+    body { font-family: system-ui, sans-serif; margin: 2em; }
+    .toolbar { margin-bottom: 1em; }
+    button {
+      border: 1px solid #d1d5db; background: #fff;
+      border-radius: 8px; padding: .4em .9em; cursor: pointer;
+    }
+    #menu { display: flex; flex-wrap: wrap; gap: 16px; }
+    .card {
+      flex: 1 1 180px;
+      border: 1px solid #e5e7eb; border-radius: 12px;
+      padding: 1em 1.2em;
+      box-shadow: 0 2px 8px rgb(0 0 0 / .05);
+    }
+    .card h3 { margin: 0 0 .3em; }
+    .card p { margin: 0 0 .6em; color: #b45309; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>咖啡菜單</h1>
+  <div class="toolbar">
+    <button id="hotBtn">只看熱飲</button>
+    <button id="allBtn">全部</button>
+  </div>
+  <div id="menu"></div>
+
+  <script>
+    const allMenu = [
+      { item: "拿鐵", price: 120, hot: true },
+      { item: "美式", price: 100, hot: false },
+      { item: "卡布", price: 130, hot: true },
+      { item: "摩卡", price: 140, hot: true },
+    ];
+
+    // WIREFRAME — CSS is ready; render cards with this markup:
+    //
+    //   #menu (flex row, wraps)
+    //   +-- .card ----------------+
+    //   |  h3      item name      |
+    //   |  p       $price         |
+    //   |  button.buy  data-item  |   <- for event delegation
+    //   +-------------------------+
+    //
+    //   <div class="card">
+    //     <h3>ITEM</h3><p>$PRICE</p>
+    //     <button class="buy" data-item="ITEM">加入</button>
+    //   </div>
+    //
+    //   [hot btn] -> renderMenu(allMenu.filter(hot))   just swap data + re-render
+    //   #menu click -> if e.target.matches(".buy") -> log dataset.item
+
+    // TODO 1: 把陣列用 map 渲染成一排卡片, 包成 renderMenu(data) 函式
+    //         （投影片「渲染一整份清單」頁）
+    function renderMenu(data){
+        const html = data
+        .map((d) => `
+            <div class="card">
+                <h3>${d.item}</h3>
+                <p>${d.price}</p>   
+                <button class="buy" data-item="${d.item}">加入</button>
+            </div>`)
+        .join("");
+        document.querySelector("#menu").innerHTML = html;
+    }
+    
+    renderMenu(allMenu);
+    // TODO 2: 「只看熱飲」按鈕: filter 後重新 render;「全部」還原
+    //         （投影片「加互動: 篩選後重渲染」頁）
+    document.querySelector("#hotBtn").addEventListener("click", () => {
+      renderMenu(allMenu.filter((d) => d.hot));
+    });
+    document.querySelector("#allBtn").addEventListener("click", () => {
+      renderMenu(allMenu);
+    });
+    // TODO 3: 用事件委派, 讓每張卡上的「加入」按鈕都能被點到
+    //         （投影片「動態元素怎麼綁事件」「data-* 屬性」頁）
+    document.querySelector("#menu").addEventListener("click", (e) => {
+        if (e.target.classList.contains("buy")) {
+            console.log("加入:", e.target.dataset.item);
+        }
+    });
+
+  </script>
+</body>
+</html>
